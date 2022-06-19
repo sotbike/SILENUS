@@ -1,4 +1,4 @@
-R code for the configuration of map charts depicting each country percentage contribution at the level of studies
+R code for the configuration of a map chart depicting each country percentage contribution at the level of studies
 
 fisrtly place the data file on desktop
 
