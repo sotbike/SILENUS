@@ -1,7 +1,4 @@
-# TB2
-time series analysis data accompanied by code (outcome: overall complications after robotic vs. open partial nephrectomy)
-
-R code is included for the implementation of fixed and random effects models in the context of a meta-regression analysis (moderator: year of publication)
+R code for the configuration of a map chart depicting each country percentage contribution at the level of patients
 
 fisrtly place the data file on desktop
 
