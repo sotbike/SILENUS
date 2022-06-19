@@ -70,6 +70,7 @@ lines(yearvec, preds$ci.lb, lty = "dashed")
 lines(yearvec, preds$ci.ub, lty = "dashed")
 abline(h=0, lwd = 2, lty = "dotted")
 
+
 # Meta Regression Analysis (Single-center Studies)
 metareg_peto_fe<-escalc(measure = "OR",ai = evexp, bi = nonevexp, ci = evctrl, di = nonevctrl, data = overallcomp [overallcomp$center=="Single-center Studies",], append = TRUE)
 metareg_peto_fema<-rma(yi, vi, data = metareg_peto_fe, method = "FE", mods = ~year)
@@ -121,6 +122,7 @@ lines(yearvec, preds$ci.lb, lty = "dashed")
 lines(yearvec, preds$ci.ub, lty = "dashed")
 abline(h=0, lwd = 2, lty = "dotted")
 
+
 # Meta Regression Analysis (Studies without patient matching)
 metareg_peto_re<-escalc(measure = "OR",ai = evexp, bi = nonevexp, ci = evctrl, di = nonevctrl, data = overallcomp [overallcomp$matching=="Studies without patient matching",], append = TRUE)
 metareg_peto_rema<-rma(yi, vi, data = metareg_peto_re, method = "REML", mods = ~year)
@@ -135,6 +137,7 @@ lines(yearvec, preds$ci.lb, lty = "dashed")
 lines(yearvec, preds$ci.ub, lty = "dashed")
 abline(h=0, lwd = 2, lty = "dotted")
 
+
 # Meta Regression Analysis (Multicenter Studies)
 metareg_peto_re<-escalc(measure = "OR",ai = evexp, bi = nonevexp, ci = evctrl, di = nonevctrl, data = overallcomp [overallcomp$center=="Multicenter Studies",], append = TRUE)
 metareg_peto_rema<-rma(yi, vi, data = metareg_peto_re, method = "REML", mods = ~year)
@@ -148,6 +151,7 @@ lines(yearvec, preds$pred, lwd = 2, col = "blue")
 lines(yearvec, preds$ci.lb, lty = "dashed")
 lines(yearvec, preds$ci.ub, lty = "dashed")
 abline(h=0, lwd = 2, lty = "dotted")
+
 
 # Meta Regression Analysis (Single-center Studies)
 metareg_peto_re<-escalc(measure = "OR",ai = evexp, bi = nonevexp, ci = evctrl, di = nonevctrl, data = overallcomp [overallcomp$center=="Single-center Studies",], append = TRUE)
