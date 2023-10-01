@@ -1,0 +1,1151 @@
+############################################## PACKAGES & LIBRARIES ################################################
+
+# Package installation and library loading
+install.packages("meta")
+install.packages("metafor")
+install.packages("metasens")
+
+library(meta)
+library(metafor)
+library(metasens)
+
+################################################### DATASETS #######################################################
+
+# First we import the required datasets for primary variables
+MALES<-read.csv("C:/Users/sotbi/Desktop/Data/2. SECONDARY VARIABLES/1. MALES.csv", sep=";", header=TRUE)
+ΔWEIGHT<-read.csv("C:/Users/sotbi/Desktop/Data/2. SECONDARY VARIABLES/2. ΔWEIGHT.csv", sep=";", header=TRUE)
+ΔBMI<-read.csv("C:/Users/sotbi/Desktop/Data/2. SECONDARY VARIABLES/3. ΔBMI.csv", sep=";", header=TRUE)
+EBWL<-read.csv("C:/Users/sotbi/Desktop/Data/2. SECONDARY VARIABLES/4. EBWL.csv", sep=";", header=TRUE)
+ΔWAIST<-read.csv("C:/Users/sotbi/Desktop/Data/2. SECONDARY VARIABLES/5. ΔWAIST.csv", sep=";", header=TRUE)
+HBA1c<-read.csv("C:/Users/sotbi/Desktop/Data/2. SECONDARY VARIABLES/6. HBA1c.csv", sep=";", header=TRUE)
+ΔHBA1c<-read.csv("C:/Users/sotbi/Desktop/Data/2. SECONDARY VARIABLES/7. ΔHBA1c.csv", sep=";", header=TRUE)
+HOMA_IR<-read.csv("C:/Users/sotbi/Desktop/Data/2. SECONDARY VARIABLES/8. HOMA-IR.csv", sep=";", header=TRUE)
+ΔHOMA_IR<-read.csv("C:/Users/sotbi/Desktop/Data/2. SECONDARY VARIABLES/9. ΔHOMA-IR.csv", sep=";", header=TRUE)
+HG_EVENTS<-read.csv("C:/Users/sotbi/Desktop/Data/2. SECONDARY VARIABLES/10. HG_EVENTS.csv", sep=";", header=TRUE)
+G_PEAK<-read.csv("C:/Users/sotbi/Desktop/Data/2. SECONDARY VARIABLES/11. G_PEAK.csv", sep=";", header=TRUE)
+TIME_G_PEAK<-read.csv("C:/Users/sotbi/Desktop/Data/2. SECONDARY VARIABLES/12. TIME_G_PEAK.csv", sep=";", header=TRUE)
+G_NADIR<-read.csv("C:/Users/sotbi/Desktop/Data/2. SECONDARY VARIABLES/13. G_NADIR.csv", sep=";", header=TRUE)
+ΔG_PEAK_NADIR<-read.csv("C:/Users/sotbi/Desktop/Data/2. SECONDARY VARIABLES/14. ΔG_PEAK-NADIR.csv", sep=";", header=TRUE)
+C_PEPTIDE<-read.csv("C:/Users/sotbi/Desktop/Data/2. SECONDARY VARIABLES/15. C-PEPTIDE.csv", sep=";", header=TRUE)
+ΔC_PEPTIDE<-read.csv("C:/Users/sotbi/Desktop/Data/2. SECONDARY VARIABLES/16. ΔC-PEPTIDE.csv", sep=";", header=TRUE)
+G_1H_FAST<-read.csv("C:/Users/sotbi/Desktop/Data/2. SECONDARY VARIABLES/17. G_1H-FAST.csv", sep=";", header=TRUE)
+ΔG_1H_FAST<-read.csv("C:/Users/sotbi/Desktop/Data/2. SECONDARY VARIABLES/18. ΔG_1H-FAST.csv", sep=";", header=TRUE)
+G_1H_2H<-read.csv("C:/Users/sotbi/Desktop/Data/2. SECONDARY VARIABLES/19. G_1H-2H.csv", sep=";", header=TRUE)
+ΔG_1H_2H<-read.csv("C:/Users/sotbi/Desktop/Data/2. SECONDARY VARIABLES/20. ΔG_1H-2H.csv", sep=";", header=TRUE)
+I_1H_FAST<-read.csv("C:/Users/sotbi/Desktop/Data/2. SECONDARY VARIABLES/21. I_1H-FAST.csv", sep=";", header=TRUE)
+ΔI_1H_FAST<-read.csv("C:/Users/sotbi/Desktop/Data/2. SECONDARY VARIABLES/22. ΔI_1H-FAST.csv", sep=";", header=TRUE)
+I_1H_2H<-read.csv("C:/Users/sotbi/Desktop/Data/2. SECONDARY VARIABLES/23. I_1H-2H.csv", sep=";", header=TRUE)
+ΔI_1H_2H<-read.csv("C:/Users/sotbi/Desktop/Data/2. SECONDARY VARIABLES/24. ΔI_1H-2H.csv", sep=";", header=TRUE)
+
+
+# We create a new folder named "Plots_S" on desktop 
+folder_name <- "Plots_S"
+# Specify the desktop path
+desktop_path <- file.path("C:/Users/sotbi/Desktop")
+# Create the folder path
+folder_path <- file.path(desktop_path, folder_name)
+
+# Check if the folder already exists
+if (dir.exists(folder_path)) {
+  print("Folder already exists!")
+} else {
+  # Create the folder on the desktop
+  dir.create(folder_path)
+  print("Folder created successfully!")
+}
+
+# And now we set the working directory to the new folder 
+# This is where the plots are to be saved
+setwd("C:/Users/sotbi/Desktop/Plots_S")
+
+
+#################################################### MALES ##########################################################
+
+#Now we define the dataset of interest
+dset<-MALES
+
+# First we define the order of reporting the different subgroups
+order_post2018 <- c("Studies published after 2018", "Studies published before 2018")
+order_matching <- c("Studies with patient matching", "Studies without patient matching")
+order_diabetes <- c("Studies with DM2 patients", "Studies without DM2 patients")
+order_robins <- c("ROBINS-I: Low", "ROBINS-I: Moderate", "ROBINS-I: Serious", "ROBINS-I: Critical")
+
+# Then we apply the predefined order of reporting to the dataset
+dset$post2018 <- factor(dset$post2018, levels = order_post2018)
+dset$matching <- factor(dset$matching, levels = order_matching)
+dset$diabetes <- factor(dset$diabetes, levels = order_diabetes)
+dset$robins <- factor(dset$robins, levels = order_robins)
+
+
+# First we define the width & height parameters for the different plots
+# Pooled analysis forest plot parameters
+W_for_pool <- 700
+H_for_pool <- 300
+# Funnel & Radial plot parameters
+W_fr <- 1200 
+H_fr <- 780
+# Subgroup analysis forest plot parameters
+W_for_sga <- 700
+H_for_sga <- 400
+
+# Pooled meta analysis
+png("1. Forest plot (MALES).png", width = W_for_pool, height = H_for_pool)
+ma_01<-metabin(evexp,nexp,evctrl,nctrl,sm="OR",method = "MH",data = dset, studlab = study, comb.fixed = FALSE)
+forest_ma_01<-forest(ma_01, text.addline1 = "Odds Ratio for males", text.addline2 = "RYGB vs. LSG", showweights = TRUE, digits = 2, digits.se = 2, fs.xlab = 1, label.e = "RYGB", label.c = "LSG", label.right = "Favours RYGB", label.left = "Favours LSG", just = "center")
+dev.off()
+
+png("2. Funnel plot (MALES).png", width = W_fr, height = H_fr)
+funnel_contour_ma_01<-funnel(ma_01, pch = 16,contour = c(0.9,0.95,0.99), col.contour = c("darkgray", "gray", "lightgray"),xlim = c(0.1,10))
+legend(0.11,0.45, c("0.1 > p > 0.05", "0.05 > p > 0.01", "p < 0.01"), fill = c("darkgray", "gray", "lightgray"), bty = "n")
+dev.off()
+
+
+png("3. Radial plot with Egger's test (MALES).png", width = W_fr, height = H_fr)
+radial_ma_01<-radial(ma_01)
+eggers_ma_01<-metabias(ma_01, method.bias = "linreg", plotit = TRUE)
+eggers_ma_01
+reg_ma_01<-lm(I(ma_01$TE/ma_01$seTE) ~ I(1/ma_01$seTE))
+radial(ma_01)
+abline(reg_ma_01)
+dev.off()
+
+
+# subgroup analysis (post2018)
+png("4. Forest plot with subgroups according to publication year (MALES).png", width = W_for_sga, height = H_for_sga)
+ma_01_post2018<-metabin(evexp,nexp,evctrl,nctrl,sm="OR",method = "MH",data = dset, comb.fixed = FALSE, studlab = study, byvar = post2018, print.byvar = FALSE)
+forest_ma_01_post2018<-forest(ma_01_post2018, text.addline1 = "Odds Ratio for males", text.addline2 = "RYGB vs. LSG", showweights = TRUE, digits = 2, digits.se = 2, fs.xlab = 1, label.e = "RYGB", label.c = "LSG", label.right = "Favours RYGB", label.left = "Favours LSG", just = "center")
+dev.off()
+
+# subgroup analysis (matching)
+png("5. Forest plot with subgroups according to patient matching (MALES).png", width = W_for_sga, height = H_for_sga)
+ma_01_matching<-metabin(evexp,nexp,evctrl,nctrl,sm="OR",method = "MH",data = dset, comb.fixed = FALSE, studlab = study, byvar = matching, print.byvar = FALSE)
+forest_ma_01_matching<-forest(ma_01_matching, text.addline1 = "Odds Ratio for males", text.addline2 = "RYGB vs. LSG", showweights = TRUE, digits = 2, digits.se = 2, fs.xlab = 1, label.e = "RYGB", label.c = "LSG", label.right = "Favours RYGB", label.left = "Favours LSG", just = "center")
+dev.off()
+
+# subgroup analysis (DM2)
+png("6. Forest plot with subgroups according to DM2 (MALES).png", width = W_for_sga, height = H_for_sga)
+ma_01_diabetes<-metabin(evexp,nexp,evctrl,nctrl,sm="OR",method = "MH",data = dset, comb.fixed = FALSE, studlab = study, byvar = diabetes, print.byvar = FALSE)
+forest_ma_01_diabetes<-forest(ma_01_diabetes, text.addline1 = "Odds Ratio for males", text.addline2 = "RYGB vs. LSG", showweights = TRUE, digits = 2, digits.se = 2, fs.xlab = 1, label.e = "RYGB", label.c = "LSG", label.right = "Favours RYGB", label.left = "Favours LSG", just = "center")
+dev.off()
+
+# subgroup analysis (robins)
+png("7. Forest plot with subgroups according to ROBINS-I (MALES).png", width = W_for_sga, height = H_for_sga)
+ma_01_robins<-metabin(evexp,nexp,evctrl,nctrl,sm="OR",method = "MH",data = dset, comb.fixed = FALSE, studlab = study, byvar = robins, print.byvar = FALSE)
+forest_ma_01_robins<-forest(ma_01_robins, text.addline1 = "Odds Ratio for males", text.addline2 = "RYGB vs. LSG", showweights = TRUE, digits = 2, digits.se = 2, fs.xlab = 1, label.e = "RYGB", label.c = "LSG", label.right = "Favours RYGB", label.left = "Favours LSG", just = "center")
+dev.off()
+
+#################################################### ΔWEIGHT ##########################################################
+
+#Now we define the dataset of interest
+dset<-ΔWEIGHT
+
+# First we define the order of reporting the different subgroups
+order_post2018 <- c("Studies published after 2018", "Studies published before 2018")
+order_matching <- c("Studies with patient matching", "Studies without patient matching")
+order_diabetes <- c("Studies with DM2 patients", "Studies without DM2 patients")
+order_robins <- c("ROBINS-I: Low", "ROBINS-I: Moderate", "ROBINS-I: Serious", "ROBINS-I: Critical")
+
+# Then we apply the predefined order of reporting to the dataset
+dset$post2018 <- factor(dset$post2018, levels = order_post2018)
+dset$matching <- factor(dset$matching, levels = order_matching)
+dset$diabetes <- factor(dset$diabetes, levels = order_diabetes)
+dset$robins <- factor(dset$robins, levels = order_robins)
+
+
+# First we define the width & height parameters for the different plots
+# Pooled analysis forest plot parameters
+W_for_pool <- 800
+H_for_pool <- 300
+# Funnel & Radial plot parameters
+W_fr <- 1200 
+H_fr <- 780
+# Subgroup analysis forest plot parameters
+W_for_sga <- 800
+H_for_sga <- 400
+
+
+# Pooled meta analysis
+png("8. Forest plot (ΔWEIGHT).png", width = W_for_pool, height = H_for_pool)
+ma_02<-metacont(nexp,mexp,sexp,nctrl,mctrl,sctrl,data = dset, studlab = study, comb.fixed = FALSE, hakn = TRUE)
+forest_ma_02<-forest(ma_02, text.addline1 = "Weight loss: Mean difference in the change from baseline (Kg)", text.addline2 = "RYGB vs. LSG", showweights = TRUE, digits = 2, digits.se = 2, fs.xlab = 1, label.e = "RYGB", label.c = "LSG", label.right = "Favours LSG", label.left = "Favours RYGB", just = "center")
+dev.off()
+
+png("9. Funnel plot (ΔWEIGHT).png", width = W_fr, height = H_fr)
+funnel_contour_ma_02<-funnel(ma_02, pch = 16,contour = c(0.9,0.95,0.99), col.contour = c("darkgray", "gray", "lightgray"),xlim = c(0.1,10))
+legend(0.11,0.45, c("0.1 > p > 0.05", "0.05 > p > 0.01", "p < 0.01"), fill = c("darkgray", "gray", "lightgray"), bty = "n")
+dev.off()
+
+
+png("10. Radial plot with Egger's test (ΔWEIGHT).png", width = W_fr, height = H_fr)
+radial_ma_02<-radial(ma_02)
+eggers_ma_02<-metabias(ma_02, method.bias = "linreg", plotit = TRUE)
+eggers_ma_02
+reg_ma_02<-lm(I(ma_02$TE/ma_02$seTE) ~ I(1/ma_02$seTE))
+radial(ma_02)
+abline(reg_ma_02)
+dev.off()
+
+
+# subgroup analysis (post2018)
+png("11. Forest plot with subgroups according to publication year (ΔWEIGHT).png", width = W_for_sga, height = H_for_sga)
+ma_02_post2018<-metacont(nexp,mexp,sexp,nctrl,mctrl,sctrl,data = dset, comb.fixed = FALSE, hakn = TRUE, studlab = study, byvar = post2018, print.byvar = FALSE)
+forest_ma_02_post2018<-forest(ma_02_post2018, text.addline1 = "Weight loss: Mean difference in the change from baseline (Kg)", text.addline2 = "RYGB vs. LSG", showweights = TRUE, digits = 2, digits.se = 2, fs.xlab = 1, label.e = "RYGB", label.c = "LSG", label.right = "Favours LSG", label.left = "Favours RYGB", just = "center")
+dev.off()
+
+# subgroup analysis (matching)
+png("12. Forest plot with subgroups according to patient matching (ΔWEIGHT).png", width = W_for_sga, height = H_for_sga)
+ma_02_matching<-metacont(nexp,mexp,sexp,nctrl,mctrl,sctrl,data = dset, comb.fixed = FALSE, hakn = TRUE, studlab = study, byvar = matching, print.byvar = FALSE)
+forest_ma_02_matching<-forest(ma_02_matching, text.addline1 = "Weight loss: Mean difference in the change from baseline (Kg)", text.addline2 = "RYGB vs. LSG", showweights = TRUE, digits = 2, digits.se = 2, fs.xlab = 1, label.e = "RYGB", label.c = "LSG", label.right = "Favours LSG", label.left = "Favours RYGB", just = "center")
+dev.off()
+
+# subgroup analysis (DM2)
+png("13. Forest plot with subgroups according to DM2 (ΔWEIGHT).png", width = W_for_sga, height = H_for_sga)
+ma_02_diabetes<-metacont(nexp,mexp,sexp,nctrl,mctrl,sctrl,data = dset, comb.fixed = FALSE, hakn = TRUE, studlab = study, byvar = diabetes, print.byvar = FALSE)
+forest_ma_02_diabetes<-forest(ma_02_diabetes, text.addline1 = "Weight loss: Mean difference in the change from baseline (Kg)", text.addline2 = "RYGB vs. LSG", showweights = TRUE, digits = 2, digits.se = 2, fs.xlab = 1, label.e = "RYGB", label.c = "LSG", label.right = "Favours LSG", label.left = "Favours RYGB", just = "center")
+dev.off()
+
+# subgroup analysis (robins)
+png("14. Forest plot with subgroups according to ROBINS-I (ΔWEIGHT).png", width = W_for_sga, height = H_for_sga)
+ma_02_robins<-metacont(nexp,mexp,sexp,nctrl,mctrl,sctrl,data = dset, comb.fixed = FALSE, hakn = TRUE, studlab = study, byvar = robins, print.byvar = FALSE)
+forest_ma_02_robins<-forest(ma_02_robins, text.addline1 = "Weight loss: Mean difference in the change from baseline (Kg)", text.addline2 = "RYGB vs. LSG", showweights = TRUE, digits = 2, digits.se = 2, fs.xlab = 1, label.e = "RYGB", label.c = "LSG", label.right = "Favours LSG", label.left = "Favours RYGB", just = "center")
+dev.off()
+
+#################################################### ΔBMI ##########################################################
+
+#Now we define the dataset of interest
+dset<-ΔBMI
+
+# First we define the order of reporting the different subgroups
+order_post2018 <- c("Studies published after 2018", "Studies published before 2018")
+order_matching <- c("Studies with patient matching", "Studies without patient matching")
+order_diabetes <- c("Studies with DM2 patients", "Studies without DM2 patients")
+order_robins <- c("ROBINS-I: Low", "ROBINS-I: Moderate", "ROBINS-I: Serious", "ROBINS-I: Critical")
+
+# Then we apply the predefined order of reporting to the dataset
+dset$post2018 <- factor(dset$post2018, levels = order_post2018)
+dset$matching <- factor(dset$matching, levels = order_matching)
+dset$diabetes <- factor(dset$diabetes, levels = order_diabetes)
+dset$robins <- factor(dset$robins, levels = order_robins)
+
+
+# First we define the width & height parameters for the different plots
+# Pooled analysis forest plot parameters
+W_for_pool <- 800
+H_for_pool <- 300
+# Funnel & Radial plot parameters
+W_fr <- 1200 
+H_fr <- 780
+# Subgroup analysis forest plot parameters
+W_for_sga <- 800
+H_for_sga <- 400
+# Meta-regression analysis (MRA)
+W_pool <- 1200
+H_pool <- 780
+
+# Pooled meta analysis
+png("15. Forest plot (ΔBMI).png", width = W_for_pool, height = H_for_pool)
+ma_03<-metacont(nexp,mexp,sexp,nctrl,mctrl,sctrl,data = dset, studlab = study, comb.fixed = FALSE, hakn = TRUE)
+forest_ma_03<-forest(ma_03, text.addline1 = "BMI: Mean difference in the change from baseline (Kg/m^2)", text.addline2 = "RYGB vs. LSG", showweights = TRUE, digits = 2, digits.se = 2, fs.xlab = 1, label.e = "RYGB", label.c = "LSG", label.right = "Favours LSG", label.left = "Favours RYGB", just = "center")
+dev.off()
+
+png("16. Funnel plot (ΔBMI).png", width = W_fr, height = H_fr)
+funnel_contour_ma_03<-funnel(ma_03, pch = 16,contour = c(0.9,0.95,0.99), col.contour = c("darkgray", "gray", "lightgray"),xlim = c(0.1,10))
+legend(0.11,0.45, c("0.1 > p > 0.05", "0.05 > p > 0.01", "p < 0.01"), fill = c("darkgray", "gray", "lightgray"), bty = "n")
+dev.off()
+
+
+png("17. Radial plot with Egger's test (ΔBMI).png", width = W_fr, height = H_fr)
+radial_ma_03<-radial(ma_03)
+eggers_ma_03<-metabias(ma_03, method.bias = "linreg", plotit = TRUE)
+eggers_ma_03
+reg_ma_03<-lm(I(ma_03$TE/ma_03$seTE) ~ I(1/ma_03$seTE))
+radial(ma_03)
+abline(reg_ma_03)
+dev.off()
+
+
+# subgroup analysis (post2018)
+png("18. Forest plot with subgroups according to publication year (ΔBMI).png", width = W_for_sga, height = H_for_sga)
+ma_03_post2018<-metacont(nexp,mexp,sexp,nctrl,mctrl,sctrl,data = dset, comb.fixed = FALSE, hakn = TRUE, studlab = study, byvar = post2018, print.byvar = FALSE)
+forest_ma_03_post2018<-forest(ma_03_post2018, text.addline1 = "BMI: Mean difference in the change from baseline (Kg/m^2)", text.addline2 = "RYGB vs. LSG", showweights = TRUE, digits = 2, digits.se = 2, fs.xlab = 1, label.e = "RYGB", label.c = "LSG", label.right = "Favours LSG", label.left = "Favours RYGB", just = "center")
+dev.off()
+
+# subgroup analysis (matching)
+png("19. Forest plot with subgroups according to patient matching (ΔBMI).png", width = W_for_sga, height = H_for_sga)
+ma_03_matching<-metacont(nexp,mexp,sexp,nctrl,mctrl,sctrl,data = dset, comb.fixed = FALSE, hakn = TRUE, studlab = study, byvar = matching, print.byvar = FALSE)
+forest_ma_03_matching<-forest(ma_03_matching, text.addline1 = "BMI: Mean difference in the change from baseline (Kg/m^2)", text.addline2 = "RYGB vs. LSG", showweights = TRUE, digits = 2, digits.se = 2, fs.xlab = 1, label.e = "RYGB", label.c = "LSG", label.right = "Favours LSG", label.left = "Favours RYGB", just = "center")
+dev.off()
+
+# subgroup analysis (DM2)
+png("20. Forest plot with subgroups according to DM2 (ΔBMI).png", width = W_for_sga, height = H_for_sga)
+ma_03_diabetes<-metacont(nexp,mexp,sexp,nctrl,mctrl,sctrl,data = dset, comb.fixed = FALSE, hakn = TRUE, studlab = study, byvar = diabetes, print.byvar = FALSE)
+forest_ma_03_diabetes<-forest(ma_03_diabetes, text.addline1 = "BMI: Mean difference in the change from baseline (Kg/m^2)", text.addline2 = "RYGB vs. LSG", showweights = TRUE, digits = 2, digits.se = 2, fs.xlab = 1, label.e = "RYGB", label.c = "LSG", label.right = "Favours LSG", label.left = "Favours RYGB", just = "center")
+dev.off()
+
+# subgroup analysis (robins)
+png("21. Forest plot with subgroups according to ROBINS-I (ΔBMI).png", width = W_for_sga, height = H_for_sga)
+ma_03_robins<-metacont(nexp,mexp,sexp,nctrl,mctrl,sctrl,data = dset, comb.fixed = FALSE, hakn = TRUE, studlab = study, byvar = robins, print.byvar = FALSE)
+forest_ma_03_robins<-forest(ma_03_robins, text.addline1 = "BMI: Mean difference in the change from baseline (Kg/m^2)", text.addline2 = "RYGB vs. LSG", showweights = TRUE, digits = 2, digits.se = 2, fs.xlab = 1, label.e = "RYGB", label.c = "LSG", label.right = "Favours LSG", label.left = "Favours RYGB", just = "center")
+dev.off()
+
+# Meta Regression Analysis (MRA) for publication year in all studies (using metafor)
+png("22. Pooled MRA plot according to publication year (ΔBMI).png", width = W_pool, height = H_pool)
+par(mar = c(5, 5.5, 4, 2) + 0.1)
+ma_03_mra_year<-escalc(measure = "MD",n1i = nexp, m1i = mexp, sd1i = sexp, n2i = nctrl,m2i = mctrl, sd2i = sctrl, data = dset, append = TRUE)
+ma_03_rma_year<-rma(yi, vi, data = ma_03_mra_year, method = "REML", mods = ~year)
+yearvec<-seq(min(dset$year), max(dset$year), 1)
+preds2<-predict(ma_03_rma_year, newmods = yearvec)
+wi2<-1/sqrt(ma_03_mra_year$vi+ma_03_rma_year$tau2)
+size2<-1+2*(wi2 - min(wi2)) / (max(wi2) - min(wi2))
+plot(ma_03_mra_year$year, ma_03_mra_year$yi, pch = 1, cex = size2, xlim = c(min(dset$year)-1, max(dset$year)+1), ylim = c(min(ma_03_mra_year$yi)-1, max(ma_03_mra_year$yi)+1), ylab = "BMI: Mean difference in the change from baseline (Kg/m^2)", xlab = "Year of publication", cex.lab = 1.5, xaxt = "n", yaxt = "n")
+lines(yearvec, preds2$pred, lwd = 2, col = "red")
+lines(yearvec, preds2$ci.lb, lty = "dashed")
+lines(yearvec, preds2$ci.ub, lty = "dashed")
+abline(h=0, lwd = 2, lty = "dotted")
+axis(side = 2, cex.axis = 1.5)
+axis(side = 1, cex.axis = 1.5)
+title("Meta-regression of the comparative effect in all studies", cex.main = 2, line = 1.5)
+dev.off()
+
+# Meta Regression Analysis (MRA) for NOS quality stars in all studies (using metafor)
+png("23. Pooled MRA plot according to NOS quality stars (ΔBMI).png", width = W_pool, height = H_pool)
+par(mar = c(5, 5.5, 4, 2) + 0.1)
+ma_03_mra_stars<-escalc(measure = "MD",n1i = nexp, m1i = mexp, sd1i = sexp, n2i = nctrl,m2i = mctrl, sd2i = sctrl, data = dset, append = TRUE)
+ma_03_rma_stars<-rma(yi, vi, data = ma_03_mra_stars, method = "REML", mods = ~stars)
+starsvec<-seq(min(dset$stars), max(dset$stars), 1)
+preds2<-predict(ma_03_rma_stars, newmods = starsvec)
+wi2<-1/sqrt(ma_03_mra_stars$vi+ma_03_rma_stars$tau2)
+size2<-1+2*(wi2 - min(wi2)) / (max(wi2) - min(wi2))
+plot(ma_03_mra_stars$stars, ma_03_mra_stars$yi, pch = 1, cex = size2, xlim = c(min(dset$stars)-1, max(dset$stars)+1), ylim = c(min(ma_03_mra_stars$yi)-1, max(ma_03_mra_stars$yi)+1), ylab = "BMI: Mean difference in the change from baseline (Kg/m^2)", xlab = "NOS quality stars", cex.lab = 1.5, xaxt = "n", yaxt = "n")
+lines(starsvec, preds2$pred, lwd = 2, col = "blue")
+lines(starsvec, preds2$ci.lb, lty = "dashed")
+lines(starsvec, preds2$ci.ub, lty = "dashed")
+abline(h=0, lwd = 2, lty = "dotted")
+axis(side = 2, cex.axis = 1.5)
+axis(side = 1, cex.axis = 1.5)
+title("Meta-regression of the comparative effect in all studies", cex.main = 2, line = 1.5)
+dev.off()
+
+#################################################### EBWL ##########################################################
+
+#Now we define the dataset of interest
+dset<-EBWL
+
+# First we define the order of reporting the different subgroups
+order_post2018 <- c("Studies published after 2018", "Studies published before 2018")
+order_matching <- c("Studies with patient matching", "Studies without patient matching")
+order_diabetes <- c("Studies with DM2 patients", "Studies without DM2 patients")
+order_robins <- c("ROBINS-I: Low", "ROBINS-I: Moderate", "ROBINS-I: Serious", "ROBINS-I: Critical")
+
+# Then we apply the predefined order of reporting to the dataset
+dset$post2018 <- factor(dset$post2018, levels = order_post2018)
+dset$matching <- factor(dset$matching, levels = order_matching)
+dset$diabetes <- factor(dset$diabetes, levels = order_diabetes)
+dset$robins <- factor(dset$robins, levels = order_robins)
+
+
+# First we define the width & height parameters for the different plots
+# Pooled analysis forest plot parameters
+W_for_pool <- 800
+H_for_pool <- 300
+# Funnel & Radial plot parameters
+W_fr <- 1200 
+H_fr <- 780
+# Subgroup analysis forest plot parameters
+W_for_sga <- 800
+H_for_sga <- 400
+
+# Pooled meta analysis
+png("24. Forest plot (EBWL).png", width = W_for_pool, height = H_for_pool)
+ma_04<-metacont(nexp,mexp,sexp,nctrl,mctrl,sctrl,data = dset, studlab = study, comb.fixed = FALSE, hakn = TRUE)
+forest_ma_04<-forest(ma_04, text.addline1 = "Mean difference in EBWL (%)", text.addline2 = "RYGB vs. LSG", showweights = TRUE, digits = 2, digits.se = 2, fs.xlab = 1, label.e = "RYGB", label.c = "LSG", label.right = "Favours RYGB", label.left = "Favours LSG", just = "center")
+dev.off()
+
+png("25. Funnel plot (EBWL).png", width = W_fr, height = H_fr)
+funnel_contour_ma_04<-funnel(ma_04, pch = 16,contour = c(0.9,0.95,0.99), col.contour = c("darkgray", "gray", "lightgray"),xlim = c(0.1,10))
+legend(0.11,0.45, c("0.1 > p > 0.05", "0.05 > p > 0.01", "p < 0.01"), fill = c("darkgray", "gray", "lightgray"), bty = "n")
+dev.off()
+
+
+png("26. Radial plot with Egger's test (EBWL).png", width = W_fr, height = H_fr)
+radial_ma_04<-radial(ma_04)
+eggers_ma_04<-metabias(ma_04, method.bias = "linreg", plotit = TRUE)
+eggers_ma_04
+reg_ma_04<-lm(I(ma_04$TE/ma_04$seTE) ~ I(1/ma_04$seTE))
+radial(ma_04)
+abline(reg_ma_04)
+dev.off()
+
+
+# subgroup analysis (post2018)
+png("27. Forest plot with subgroups according to publication year (EBWL).png", width = W_for_sga, height = H_for_sga)
+ma_04_post2018<-metacont(nexp,mexp,sexp,nctrl,mctrl,sctrl,data = dset, comb.fixed = FALSE, hakn = TRUE, studlab = study, byvar = post2018, print.byvar = FALSE)
+forest_ma_04_post2018<-forest(ma_04_post2018, text.addline1 = "Mean difference in EBWL (%)", text.addline2 = "RYGB vs. LSG", showweights = TRUE, digits = 2, digits.se = 2, fs.xlab = 1, label.e = "RYGB", label.c = "LSG", label.right = "Favours RYGB", label.left = "Favours LSG", just = "center")
+dev.off()
+
+# subgroup analysis (matching)
+png("28. Forest plot with subgroups according to patient matching (EBWL).png", width = W_for_sga, height = H_for_sga)
+ma_04_matching<-metacont(nexp,mexp,sexp,nctrl,mctrl,sctrl,data = dset, comb.fixed = FALSE, hakn = TRUE, studlab = study, byvar = matching, print.byvar = FALSE)
+forest_ma_04_matching<-forest(ma_04_matching, text.addline1 = "Mean difference in EBWL (%)", text.addline2 = "RYGB vs. LSG", showweights = TRUE, digits = 2, digits.se = 2, fs.xlab = 1, label.e = "RYGB", label.c = "LSG", label.right = "Favours RYGB", label.left = "Favours LSG", just = "center")
+dev.off()
+
+# subgroup analysis (DM2)
+png("29. Forest plot with subgroups according to DM2 (EBWL).png", width = W_for_sga, height = H_for_sga)
+ma_04_diabetes<-metacont(nexp,mexp,sexp,nctrl,mctrl,sctrl,data = dset, comb.fixed = FALSE, hakn = TRUE, studlab = study, byvar = diabetes, print.byvar = FALSE)
+forest_ma_04_diabetes<-forest(ma_04_diabetes, text.addline1 = "Mean difference in EBWL (%)", text.addline2 = "RYGB vs. LSG", showweights = TRUE, digits = 2, digits.se = 2, fs.xlab = 1, label.e = "RYGB", label.c = "LSG", label.right = "Favours RYGB", label.left = "Favours LSG", just = "center")
+dev.off()
+
+# subgroup analysis (robins)
+png("30. Forest plot with subgroups according to ROBINS-I (EBWL).png", width = W_for_sga, height = H_for_sga)
+ma_04_robins<-metacont(nexp,mexp,sexp,nctrl,mctrl,sctrl,data = dset, comb.fixed = FALSE, hakn = TRUE, studlab = study, byvar = robins, print.byvar = FALSE)
+forest_ma_04_robins<-forest(ma_04_robins, text.addline1 = "Mean difference in EBWL (%)", text.addline2 = "RYGB vs. LSG", showweights = TRUE, digits = 2, digits.se = 2, fs.xlab = 1, label.e = "RYGB", label.c = "LSG", label.right = "Favours RYGB", label.left = "Favours LSG", just = "center")
+dev.off()
+
+#################################################### ΔWAIST ##########################################################
+
+#Now we define the dataset of interest
+dset<-ΔWAIST
+
+# First we define the order of reporting the different subgroups
+order_post2018 <- c("Studies published after 2018", "Studies published before 2018")
+order_matching <- c("Studies with patient matching", "Studies without patient matching")
+order_diabetes <- c("Studies with DM2 patients", "Studies without DM2 patients")
+order_robins <- c("ROBINS-I: Low", "ROBINS-I: Moderate", "ROBINS-I: Serious", "ROBINS-I: Critical")
+
+# Then we apply the predefined order of reporting to the dataset
+dset$post2018 <- factor(dset$post2018, levels = order_post2018)
+dset$matching <- factor(dset$matching, levels = order_matching)
+dset$diabetes <- factor(dset$diabetes, levels = order_diabetes)
+dset$robins <- factor(dset$robins, levels = order_robins)
+
+
+# First we define the width & height parameters for the different plots
+# Pooled analysis forest plot parameters
+W_for_pool <- 800
+H_for_pool <- 300
+
+# Pooled meta analysis
+png("31. Forest plot (ΔWAIST).png", width = W_for_pool, height = H_for_pool)
+ma_05<-metacont(nexp,mexp,sexp,nctrl,mctrl,sctrl,data = dset, studlab = study, comb.fixed = FALSE, hakn = TRUE)
+forest_ma_05<-forest(ma_05, text.addline1 = "WC: Mean difference in the change from baseline (cm)", text.addline2 = "RYGB vs. LSG", showweights = TRUE, digits = 2, digits.se = 2, fs.xlab = 1, label.e = "RYGB", label.c = "LSG", label.right = "Favours LSG", label.left = "Favours RYGB", just = "center")
+dev.off()
+
+#################################################### HBA1c ##########################################################
+
+#Now we define the dataset of interest
+dset<-HBA1c
+
+# First we define the order of reporting the different subgroups
+order_post2018 <- c("Studies published after 2018", "Studies published before 2018")
+order_matching <- c("Studies with patient matching", "Studies without patient matching")
+order_diabetes <- c("Studies with DM2 patients", "Studies without DM2 patients")
+order_robins <- c("ROBINS-I: Low", "ROBINS-I: Moderate", "ROBINS-I: Serious", "ROBINS-I: Critical")
+
+# Then we apply the predefined order of reporting to the dataset
+dset$post2018 <- factor(dset$post2018, levels = order_post2018)
+dset$matching <- factor(dset$matching, levels = order_matching)
+dset$diabetes <- factor(dset$diabetes, levels = order_diabetes)
+dset$robins <- factor(dset$robins, levels = order_robins)
+
+
+# First we define the width & height parameters for the different plots
+# Pooled analysis forest plot parameters
+W_for_pool <- 800
+H_for_pool <- 300
+# Funnel & Radial plot parameters
+W_fr <- 1200 
+H_fr <- 780
+# Subgroup analysis forest plot parameters
+W_for_sga <- 800
+H_for_sga <- 400
+
+# Pooled meta analysis
+png("32. Forest plot (HBA1c).png", width = W_for_pool, height = H_for_pool)
+ma_06<-metacont(nexp,mexp,sexp,nctrl,mctrl,sctrl,data = dset, studlab = study, comb.fixed = FALSE, hakn = TRUE)
+forest_ma_06<-forest(ma_06, text.addline1 = "Mean difference in HBA1c (%)", text.addline2 = "RYGB vs. LSG", showweights = TRUE, digits = 2, digits.se = 2, fs.xlab = 1, label.e = "RYGB", label.c = "LSG", label.right = "Favours RYGB", label.left = "Favours LSG", just = "center")
+dev.off()
+
+png("33. Funnel plot (HBA1c).png", width = W_fr, height = H_fr)
+funnel_contour_ma_06<-funnel(ma_06, pch = 16,contour = c(0.9,0.95,0.99), col.contour = c("darkgray", "gray", "lightgray"),xlim = c(0.1,10))
+legend(0.11,0.45, c("0.1 > p > 0.05", "0.05 > p > 0.01", "p < 0.01"), fill = c("darkgray", "gray", "lightgray"), bty = "n")
+dev.off()
+
+
+png("34. Radial plot with Egger's test (HBA1c).png", width = W_fr, height = H_fr)
+radial_ma_06<-radial(ma_06)
+eggers_ma_06<-metabias(ma_06, method.bias = "linreg", plotit = TRUE)
+eggers_ma_06
+reg_ma_06<-lm(I(ma_06$TE/ma_06$seTE) ~ I(1/ma_06$seTE))
+radial(ma_06)
+abline(reg_ma_06)
+dev.off()
+
+
+# subgroup analysis (post2018)
+png("35. Forest plot with subgroups according to publication year (HBA1c).png", width = W_for_sga, height = H_for_sga)
+ma_06_post2018<-metacont(nexp,mexp,sexp,nctrl,mctrl,sctrl,data = dset, comb.fixed = FALSE, hakn = TRUE, studlab = study, byvar = post2018, print.byvar = FALSE)
+forest_ma_06_post2018<-forest(ma_06_post2018, text.addline1 = "Mean difference in HBA1c (%)", text.addline2 = "RYGB vs. LSG", showweights = TRUE, digits = 2, digits.se = 2, fs.xlab = 1, label.e = "RYGB", label.c = "LSG", label.right = "Favours RYGB", label.left = "Favours LSG", just = "center")
+dev.off()
+
+# subgroup analysis (matching)
+png("36. Forest plot with subgroups according to patient matching (HBA1c).png", width = W_for_sga, height = H_for_sga)
+ma_06_matching<-metacont(nexp,mexp,sexp,nctrl,mctrl,sctrl,data = dset, comb.fixed = FALSE, hakn = TRUE, studlab = study, byvar = matching, print.byvar = FALSE)
+forest_ma_06_matching<-forest(ma_06_matching, text.addline1 = "Mean difference in HBA1c (%)", text.addline2 = "RYGB vs. LSG", showweights = TRUE, digits = 2, digits.se = 2, fs.xlab = 1, label.e = "RYGB", label.c = "LSG", label.right = "Favours RYGB", label.left = "Favours LSG", just = "center")
+dev.off()
+
+# subgroup analysis (DM2)
+png("37. Forest plot with subgroups according to DM2 (HBA1c).png", width = W_for_sga, height = H_for_sga)
+ma_06_diabetes<-metacont(nexp,mexp,sexp,nctrl,mctrl,sctrl,data = dset, comb.fixed = FALSE, hakn = TRUE, studlab = study, byvar = diabetes, print.byvar = FALSE)
+forest_ma_06_diabetes<-forest(ma_06_diabetes, text.addline1 = "Mean difference in HBA1c (%)", text.addline2 = "RYGB vs. LSG", showweights = TRUE, digits = 2, digits.se = 2, fs.xlab = 1, label.e = "RYGB", label.c = "LSG", label.right = "Favours RYGB", label.left = "Favours LSG", just = "center")
+dev.off()
+
+# subgroup analysis (robins)
+png("38. Forest plot with subgroups according to ROBINS-I (HBA1c).png", width = W_for_sga, height = H_for_sga)
+ma_06_robins<-metacont(nexp,mexp,sexp,nctrl,mctrl,sctrl,data = dset, comb.fixed = FALSE, hakn = TRUE, studlab = study, byvar = robins, print.byvar = FALSE)
+forest_ma_06_robins<-forest(ma_06_robins, text.addline1 = "Mean difference in HBA1c (%)", text.addline2 = "RYGB vs. LSG", showweights = TRUE, digits = 2, digits.se = 2, fs.xlab = 1, label.e = "RYGB", label.c = "LSG", label.right = "Favours RYGB", label.left = "Favours LSG", just = "center")
+dev.off()
+
+#################################################### HOMA_IR ##########################################################
+
+#Now we define the dataset of interest
+dset<-HOMA_IR
+
+# First we define the order of reporting the different subgroups
+order_post2018 <- c("Studies published after 2018", "Studies published before 2018")
+order_matching <- c("Studies with patient matching", "Studies without patient matching")
+order_diabetes <- c("Studies with DM2 patients", "Studies without DM2 patients")
+order_robins <- c("ROBINS-I: Low", "ROBINS-I: Moderate", "ROBINS-I: Serious", "ROBINS-I: Critical")
+
+# Then we apply the predefined order of reporting to the dataset
+dset$post2018 <- factor(dset$post2018, levels = order_post2018)
+dset$matching <- factor(dset$matching, levels = order_matching)
+dset$diabetes <- factor(dset$diabetes, levels = order_diabetes)
+dset$robins <- factor(dset$robins, levels = order_robins)
+
+
+# First we define the width & height parameters for the different plots
+# Pooled analysis forest plot parameters
+W_for_pool <- 800
+H_for_pool <- 300
+
+# Pooled meta analysis
+png("39. Forest plot (HOMA_IR).png", width = W_for_pool, height = H_for_pool)
+ma_07<-metacont(nexp,mexp,sexp,nctrl,mctrl,sctrl,data = dset, studlab = study, comb.fixed = FALSE, hakn = TRUE)
+forest_ma_07<-forest(ma_07, text.addline1 = "Mean difference in HOMA-IR", text.addline2 = "RYGB vs. LSG", showweights = TRUE, digits = 2, digits.se = 2, fs.xlab = 1, label.e = "RYGB", label.c = "LSG", label.right = "Favours LSG", label.left = "Favours RYGB", just = "center")
+dev.off()
+
+#################################################### ΔHOMA_IR ##########################################################
+
+#Now we define the dataset of interest
+dset<-ΔHOMA_IR
+
+# First we define the order of reporting the different subgroups
+order_post2018 <- c("Studies published after 2018", "Studies published before 2018")
+order_matching <- c("Studies with patient matching", "Studies without patient matching")
+order_diabetes <- c("Studies with DM2 patients", "Studies without DM2 patients")
+order_robins <- c("ROBINS-I: Low", "ROBINS-I: Moderate", "ROBINS-I: Serious", "ROBINS-I: Critical")
+
+# Then we apply the predefined order of reporting to the dataset
+dset$post2018 <- factor(dset$post2018, levels = order_post2018)
+dset$matching <- factor(dset$matching, levels = order_matching)
+dset$diabetes <- factor(dset$diabetes, levels = order_diabetes)
+dset$robins <- factor(dset$robins, levels = order_robins)
+
+
+# First we define the width & height parameters for the different plots
+# Pooled analysis forest plot parameters
+W_for_pool <- 800
+H_for_pool <- 300
+
+
+# Pooled meta analysis
+png("40. Forest plot (ΔHOMA_IR).png", width = W_for_pool, height = H_for_pool)
+ma_08<-metacont(nexp,mexp,sexp,nctrl,mctrl,sctrl,data = dset, studlab = study, comb.fixed = FALSE, hakn = TRUE)
+forest_ma_08<-forest(ma_08, text.addline1 = "HOMA-IR: Mean difference from baseline", text.addline2 = "RYGB vs. LSG", showweights = TRUE, digits = 2, digits.se = 2, fs.xlab = 1, label.e = "RYGB", label.c = "LSG", label.right = "Favours LSG", label.left = "Favours RYGB", just = "center")
+dev.off()
+
+#################################################### HG_EVENTS ##########################################################
+
+#Now we define the dataset of interest
+dset<-HG_EVENTS
+
+# First we define the order of reporting the different subgroups
+order_post2018 <- c("Studies published after 2018", "Studies published before 2018")
+order_matching <- c("Studies with patient matching", "Studies without patient matching")
+order_diabetes <- c("Studies with DM2 patients", "Studies without DM2 patients")
+order_robins <- c("ROBINS-I: Low", "ROBINS-I: Moderate", "ROBINS-I: Serious", "ROBINS-I: Critical")
+
+# Then we apply the predefined order of reporting to the dataset
+dset$post2018 <- factor(dset$post2018, levels = order_post2018)
+dset$matching <- factor(dset$matching, levels = order_matching)
+dset$diabetes <- factor(dset$diabetes, levels = order_diabetes)
+dset$robins <- factor(dset$robins, levels = order_robins)
+
+
+# First we define the width & height parameters for the different plots
+# Pooled analysis forest plot parameters
+W_for_pool <- 800
+H_for_pool <- 300
+
+# Pooled meta analysis
+png("41. Forest plot (HG_EVENTS).png", width = W_for_pool, height = H_for_pool)
+ma_09<-metacont(nexp,mexp,sexp,nctrl,mctrl,sctrl,data = dset, studlab = study, comb.fixed = FALSE, hakn = TRUE)
+forest_ma_09<-forest(ma_09, text.addline1 = "Mean difference in 10-day HG events (n)", text.addline2 = "RYGB vs. LSG", showweights = TRUE, digits = 2, digits.se = 2, fs.xlab = 1, label.e = "RYGB", label.c = "LSG", label.right = "Favours LSG", label.left = "Favours RYGB", just = "center")
+dev.off()
+
+#################################################### G_PEAK ##########################################################
+
+#Now we define the dataset of interest
+dset<-G_PEAK
+
+# First we define the order of reporting the different subgroups
+order_post2018 <- c("Studies published after 2018", "Studies published before 2018")
+order_matching <- c("Studies with patient matching", "Studies without patient matching")
+order_diabetes <- c("Studies with DM2 patients", "Studies without DM2 patients")
+order_robins <- c("ROBINS-I: Low", "ROBINS-I: Moderate", "ROBINS-I: Serious", "ROBINS-I: Critical")
+
+# Then we apply the predefined order of reporting to the dataset
+dset$post2018 <- factor(dset$post2018, levels = order_post2018)
+dset$matching <- factor(dset$matching, levels = order_matching)
+dset$diabetes <- factor(dset$diabetes, levels = order_diabetes)
+dset$robins <- factor(dset$robins, levels = order_robins)
+
+
+# First we define the width & height parameters for the different plots
+# Pooled analysis forest plot parameters
+W_for_pool <- 800
+H_for_pool <- 300
+# Funnel & Radial plot parameters
+W_fr <- 1200 
+H_fr <- 780
+# Subgroup analysis forest plot parameters
+W_for_sga <- 800
+H_for_sga <- 400
+
+# Pooled meta analysis
+png("42. Forest plot (G_PEAK).png", width = W_for_pool, height = H_for_pool)
+ma_10<-metacont(nexp,mexp,sexp,nctrl,mctrl,sctrl,data = dset, studlab = study, comb.fixed = FALSE, hakn = TRUE)
+forest_ma_10<-forest(ma_10, text.addline1 = "Mean difference in peak glucose (mg/dl)", text.addline2 = "RYGB vs. LSG", showweights = TRUE, digits = 2, digits.se = 2, fs.xlab = 1, label.e = "RYGB", label.c = "LSG", label.right = "Favours RYGB", label.left = "Favours LSG", just = "center")
+dev.off()
+
+png("43. Funnel plot (G_PEAK).png", width = W_fr, height = H_fr)
+funnel_contour_ma_10<-funnel(ma_10, pch = 16,contour = c(0.9,0.95,0.99), col.contour = c("darkgray", "gray", "lightgray"),xlim = c(0.1,10))
+legend(0.11,0.45, c("0.1 > p > 0.05", "0.05 > p > 0.01", "p < 0.01"), fill = c("darkgray", "gray", "lightgray"), bty = "n")
+dev.off()
+
+
+png("44. Radial plot with Egger's test (G_PEAK).png", width = W_fr, height = H_fr)
+radial_ma_10<-radial(ma_10)
+eggers_ma_10<-metabias(ma_10, method.bias = "linreg", plotit = TRUE)
+eggers_ma_10
+reg_ma_10<-lm(I(ma_10$TE/ma_10$seTE) ~ I(1/ma_10$seTE))
+radial(ma_10)
+abline(reg_ma_10)
+dev.off()
+
+
+# subgroup analysis (post2018)
+png("45. Forest plot with subgroups according to publication year (G_PEAK).png", width = W_for_sga, height = H_for_sga)
+ma_10_post2018<-metacont(nexp,mexp,sexp,nctrl,mctrl,sctrl,data = dset, comb.fixed = FALSE, hakn = TRUE, studlab = study, byvar = post2018, print.byvar = FALSE)
+forest_ma_10_post2018<-forest(ma_10_post2018, text.addline1 = "Mean difference in peak glucose (mg/dl)", text.addline2 = "RYGB vs. LSG", showweights = TRUE, digits = 2, digits.se = 2, fs.xlab = 1, label.e = "RYGB", label.c = "LSG", label.right = "Favours RYGB", label.left = "Favours LSG", just = "center")
+dev.off()
+
+# subgroup analysis (matching)
+png("46. Forest plot with subgroups according to patient matching (G_PEAK).png", width = W_for_sga, height = H_for_sga)
+ma_10_matching<-metacont(nexp,mexp,sexp,nctrl,mctrl,sctrl,data = dset, comb.fixed = FALSE, hakn = TRUE, studlab = study, byvar = matching, print.byvar = FALSE)
+forest_ma_10_matching<-forest(ma_10_matching, text.addline1 = "Mean difference in peak glucose (mg/dl)", text.addline2 = "RYGB vs. LSG", showweights = TRUE, digits = 2, digits.se = 2, fs.xlab = 1, label.e = "RYGB", label.c = "LSG", label.right = "Favours RYGB", label.left = "Favours LSG", just = "center")
+dev.off()
+
+# subgroup analysis (DM2)
+png("47. Forest plot with subgroups according to DM2 (G_PEAK).png", width = W_for_sga, height = H_for_sga)
+ma_10_diabetes<-metacont(nexp,mexp,sexp,nctrl,mctrl,sctrl,data = dset, comb.fixed = FALSE, hakn = TRUE, studlab = study, byvar = diabetes, print.byvar = FALSE)
+forest_ma_10_diabetes<-forest(ma_10_diabetes, text.addline1 = "Mean difference in peak glucose (mg/dl)", text.addline2 = "RYGB vs. LSG", showweights = TRUE, digits = 2, digits.se = 2, fs.xlab = 1, label.e = "RYGB", label.c = "LSG", label.right = "Favours RYGB", label.left = "Favours LSG", just = "center")
+dev.off()
+
+# subgroup analysis (robins)
+png("48. Forest plot with subgroups according to ROBINS-I (G_PEAK).png", width = W_for_sga, height = H_for_sga)
+ma_10_robins<-metacont(nexp,mexp,sexp,nctrl,mctrl,sctrl,data = dset, comb.fixed = FALSE, hakn = TRUE, studlab = study, byvar = robins, print.byvar = FALSE)
+forest_ma_10_robins<-forest(ma_10_robins, text.addline1 = "Mean difference in peak glucose (mg/dl)", text.addline2 = "RYGB vs. LSG", showweights = TRUE, digits = 2, digits.se = 2, fs.xlab = 1, label.e = "RYGB", label.c = "LSG", label.right = "Favours RYGB", label.left = "Favours LSG", just = "center")
+dev.off()
+
+#################################################### TIME_G_PEAK ##########################################################
+
+#Now we define the dataset of interest
+dset<-TIME_G_PEAK
+
+# First we define the order of reporting the different subgroups
+order_post2018 <- c("Studies published after 2018", "Studies published before 2018")
+order_matching <- c("Studies with patient matching", "Studies without patient matching")
+order_diabetes <- c("Studies with DM2 patients", "Studies without DM2 patients")
+order_robins <- c("ROBINS-I: Low", "ROBINS-I: Moderate", "ROBINS-I: Serious", "ROBINS-I: Critical")
+
+# Then we apply the predefined order of reporting to the dataset
+dset$post2018 <- factor(dset$post2018, levels = order_post2018)
+dset$matching <- factor(dset$matching, levels = order_matching)
+dset$diabetes <- factor(dset$diabetes, levels = order_diabetes)
+dset$robins <- factor(dset$robins, levels = order_robins)
+
+
+# First we define the width & height parameters for the different plots
+# Pooled analysis forest plot parameters
+W_for_pool <- 800
+H_for_pool <- 300
+
+
+# Pooled meta analysis
+png("49. Forest plot (TIME_G_PEAK).png", width = W_for_pool, height = H_for_pool)
+ma_11<-metacont(nexp,mexp,sexp,nctrl,mctrl,sctrl,data = dset, studlab = study, comb.fixed = FALSE, hakn = TRUE)
+forest_ma_11<-forest(ma_11, text.addline1 = "Mean difference in time to peak glucose (min)", text.addline2 = "RYGB vs. LSG", showweights = TRUE, digits = 2, digits.se = 2, fs.xlab = 1, label.e = "RYGB", label.c = "LSG", label.right = "Favours RYGB", label.left = "Favours LSG", just = "center")
+dev.off()
+
+
+#################################################### G_NADIR ##########################################################
+
+#Now we define the dataset of interest
+dset<-G_NADIR
+
+# First we define the order of reporting the different subgroups
+order_post2018 <- c("Studies published after 2018", "Studies published before 2018")
+order_matching <- c("Studies with patient matching", "Studies without patient matching")
+order_diabetes <- c("Studies with DM2 patients", "Studies without DM2 patients")
+order_robins <- c("ROBINS-I: Low", "ROBINS-I: Moderate", "ROBINS-I: Serious", "ROBINS-I: Critical")
+
+# Then we apply the predefined order of reporting to the dataset
+dset$post2018 <- factor(dset$post2018, levels = order_post2018)
+dset$matching <- factor(dset$matching, levels = order_matching)
+dset$diabetes <- factor(dset$diabetes, levels = order_diabetes)
+dset$robins <- factor(dset$robins, levels = order_robins)
+
+
+# First we define the width & height parameters for the different plots
+# Pooled analysis forest plot parameters
+W_for_pool <- 800
+H_for_pool <- 300
+# Funnel & Radial plot parameters
+W_fr <- 1200 
+H_fr <- 780
+# Subgroup analysis forest plot parameters
+W_for_sga <- 800
+H_for_sga <- 400
+
+# Pooled meta analysis
+png("50. Forest plot (G_NADIR).png", width = W_for_pool, height = H_for_pool)
+ma_12<-metacont(nexp,mexp,sexp,nctrl,mctrl,sctrl,data = dset, studlab = study, comb.fixed = FALSE, hakn = TRUE)
+forest_ma_12<-forest(ma_12, text.addline1 = "Mean difference in nadir glucose (mg/dl)", text.addline2 = "RYGB vs. LSG", showweights = TRUE, digits = 2, digits.se = 2, fs.xlab = 1, label.e = "RYGB", label.c = "LSG", label.right = "Favours RYGB", label.left = "Favours LSG", just = "center")
+dev.off()
+
+png("51. Funnel plot (G_NADIR).png", width = W_fr, height = H_fr)
+funnel_contour_ma_12<-funnel(ma_12, pch = 16,contour = c(0.9,0.95,0.99), col.contour = c("darkgray", "gray", "lightgray"),xlim = c(0.1,10))
+legend(0.11,0.45, c("0.1 > p > 0.05", "0.05 > p > 0.01", "p < 0.01"), fill = c("darkgray", "gray", "lightgray"), bty = "n")
+dev.off()
+
+
+png("52. Radial plot with Egger's test (G_NADIR).png", width = W_fr, height = H_fr)
+radial_ma_12<-radial(ma_12)
+eggers_ma_12<-metabias(ma_12, method.bias = "linreg", plotit = TRUE)
+eggers_ma_12
+reg_ma_12<-lm(I(ma_12$TE/ma_12$seTE) ~ I(1/ma_12$seTE))
+radial(ma_12)
+abline(reg_ma_12)
+dev.off()
+
+
+# subgroup analysis (post2018)
+png("53. Forest plot with subgroups according to publication year (G_NADIR).png", width = W_for_sga, height = H_for_sga)
+ma_12_post2018<-metacont(nexp,mexp,sexp,nctrl,mctrl,sctrl,data = dset, comb.fixed = FALSE, hakn = TRUE, studlab = study, byvar = post2018, print.byvar = FALSE)
+forest_ma_12_post2018<-forest(ma_12_post2018, text.addline1 = "Mean difference in nadir glucose (mg/dl)", text.addline2 = "RYGB vs. LSG", showweights = TRUE, digits = 2, digits.se = 2, fs.xlab = 1, label.e = "RYGB", label.c = "LSG", label.right = "Favours RYGB", label.left = "Favours LSG", just = "center")
+dev.off()
+
+# subgroup analysis (matching)
+png("54. Forest plot with subgroups according to patient matching (G_NADIR).png", width = W_for_sga, height = H_for_sga)
+ma_12_matching<-metacont(nexp,mexp,sexp,nctrl,mctrl,sctrl,data = dset, comb.fixed = FALSE, hakn = TRUE, studlab = study, byvar = matching, print.byvar = FALSE)
+forest_ma_12_matching<-forest(ma_12_matching, text.addline1 = "Mean difference in nadir glucose (mg/dl)", text.addline2 = "RYGB vs. LSG", showweights = TRUE, digits = 2, digits.se = 2, fs.xlab = 1, label.e = "RYGB", label.c = "LSG", label.right = "Favours RYGB", label.left = "Favours LSG", just = "center")
+dev.off()
+
+# subgroup analysis (DM2)
+png("55. Forest plot with subgroups according to DM2 (G_NADIR).png", width = W_for_sga, height = H_for_sga)
+ma_12_diabetes<-metacont(nexp,mexp,sexp,nctrl,mctrl,sctrl,data = dset, comb.fixed = FALSE, hakn = TRUE, studlab = study, byvar = diabetes, print.byvar = FALSE)
+forest_ma_12_diabetes<-forest(ma_12_diabetes, text.addline1 = "Mean difference in nadir glucose (mg/dl)", text.addline2 = "RYGB vs. LSG", showweights = TRUE, digits = 2, digits.se = 2, fs.xlab = 1, label.e = "RYGB", label.c = "LSG", label.right = "Favours RYGB", label.left = "Favours LSG", just = "center")
+dev.off()
+
+# subgroup analysis (robins)
+png("56. Forest plot with subgroups according to ROBINS-I (G_NADIR).png", width = W_for_sga, height = H_for_sga)
+ma_12_robins<-metacont(nexp,mexp,sexp,nctrl,mctrl,sctrl,data = dset, comb.fixed = FALSE, hakn = TRUE, studlab = study, byvar = robins, print.byvar = FALSE)
+forest_ma_12_robins<-forest(ma_12_robins, text.addline1 = "Mean difference in nadir glucose (mg/dl)", text.addline2 = "RYGB vs. LSG", showweights = TRUE, digits = 2, digits.se = 2, fs.xlab = 1, label.e = "RYGB", label.c = "LSG", label.right = "Favours RYGB", label.left = "Favours LSG", just = "center")
+dev.off()
+
+#################################################### ΔG_PEAK_NADIR ##########################################################
+
+#Now we define the dataset of interest
+dset<-ΔG_PEAK_NADIR
+
+# First we define the order of reporting the different subgroups
+order_post2018 <- c("Studies published after 2018", "Studies published before 2018")
+order_matching <- c("Studies with patient matching", "Studies without patient matching")
+order_diabetes <- c("Studies with DM2 patients", "Studies without DM2 patients")
+order_robins <- c("ROBINS-I: Low", "ROBINS-I: Moderate", "ROBINS-I: Serious", "ROBINS-I: Critical")
+
+# Then we apply the predefined order of reporting to the dataset
+dset$post2018 <- factor(dset$post2018, levels = order_post2018)
+dset$matching <- factor(dset$matching, levels = order_matching)
+dset$diabetes <- factor(dset$diabetes, levels = order_diabetes)
+dset$robins <- factor(dset$robins, levels = order_robins)
+
+
+# First we define the width & height parameters for the different plots
+# Pooled analysis forest plot parameters
+W_for_pool <- 800
+H_for_pool <- 300
+# Funnel & Radial plot parameters
+W_fr <- 1200 
+H_fr <- 780
+# Subgroup analysis forest plot parameters
+W_for_sga <- 800
+H_for_sga <- 400
+
+# Pooled meta analysis
+png("57. Forest plot (ΔG_PEAK_NADIR).png", width = W_for_pool, height = H_for_pool)
+ma_13<-metacont(nexp,mexp,sexp,nctrl,mctrl,sctrl,data = dset, studlab = study, comb.fixed = FALSE, hakn = TRUE)
+forest_ma_13<-forest(ma_13, text.addline1 = "Peak - Nadir glucose: Mean difference in the range (mg/dl)", text.addline2 = "RYGB vs. LSG", showweights = TRUE, digits = 2, digits.se = 2, fs.xlab = 1, label.e = "RYGB", label.c = "LSG", label.right = "Favours LSG", label.left = "Favours RYGB", just = "center")
+dev.off()
+
+png("58. Funnel plot (ΔG_PEAK_NADIR).png", width = W_fr, height = H_fr)
+funnel_contour_ma_13<-funnel(ma_13, pch = 16,contour = c(0.9,0.95,0.99), col.contour = c("darkgray", "gray", "lightgray"),xlim = c(0.1,10))
+legend(0.11,0.45, c("0.1 > p > 0.05", "0.05 > p > 0.01", "p < 0.01"), fill = c("darkgray", "gray", "lightgray"), bty = "n")
+dev.off()
+
+
+png("59. Radial plot with Egger's test (ΔG_PEAK_NADIR).png", width = W_fr, height = H_fr)
+radial_ma_13<-radial(ma_13)
+eggers_ma_13<-metabias(ma_13, method.bias = "linreg", plotit = TRUE)
+eggers_ma_13
+reg_ma_13<-lm(I(ma_13$TE/ma_13$seTE) ~ I(1/ma_13$seTE))
+radial(ma_13)
+abline(reg_ma_13)
+dev.off()
+
+
+# subgroup analysis (post2018)
+png("60. Forest plot with subgroups according to publication year (ΔG_PEAK_NADIR).png", width = W_for_sga, height = H_for_sga)
+ma_13_post2018<-metacont(nexp,mexp,sexp,nctrl,mctrl,sctrl,data = dset, comb.fixed = FALSE, hakn = TRUE, studlab = study, byvar = post2018, print.byvar = FALSE)
+forest_ma_13_post2018<-forest(ma_13_post2018, text.addline1 = "Peak - Nadir glucose: Mean difference in the range (mg/dl)", text.addline2 = "RYGB vs. LSG", showweights = TRUE, digits = 2, digits.se = 2, fs.xlab = 1, label.e = "RYGB", label.c = "LSG", label.right = "Favours LSG", label.left = "Favours RYGB", just = "center")
+dev.off()
+
+# subgroup analysis (matching)
+png("61. Forest plot with subgroups according to patient matching (ΔG_PEAK_NADIR).png", width = W_for_sga, height = H_for_sga)
+ma_13_matching<-metacont(nexp,mexp,sexp,nctrl,mctrl,sctrl,data = dset, comb.fixed = FALSE, hakn = TRUE, studlab = study, byvar = matching, print.byvar = FALSE)
+forest_ma_13_matching<-forest(ma_13_matching, text.addline1 = "Peak - Nadir glucose: Mean difference in the range (mg/dl)", text.addline2 = "RYGB vs. LSG", showweights = TRUE, digits = 2, digits.se = 2, fs.xlab = 1, label.e = "RYGB", label.c = "LSG", label.right = "Favours LSG", label.left = "Favours RYGB", just = "center")
+dev.off()
+
+# subgroup analysis (DM2)
+png("62. Forest plot with subgroups according to DM2 (ΔG_PEAK_NADIR).png", width = W_for_sga, height = H_for_sga)
+ma_13_diabetes<-metacont(nexp,mexp,sexp,nctrl,mctrl,sctrl,data = dset, comb.fixed = FALSE, hakn = TRUE, studlab = study, byvar = diabetes, print.byvar = FALSE)
+forest_ma_13_diabetes<-forest(ma_13_diabetes, text.addline1 = "Peak - Nadir glucose: Mean difference in the range (mg/dl)", text.addline2 = "RYGB vs. LSG", showweights = TRUE, digits = 2, digits.se = 2, fs.xlab = 1, label.e = "RYGB", label.c = "LSG", label.right = "Favours LSG", label.left = "Favours RYGB", just = "center")
+dev.off()
+
+# subgroup analysis (robins)
+png("63. Forest plot with subgroups according to ROBINS-I (ΔG_PEAK_NADIR).png", width = W_for_sga, height = H_for_sga)
+ma_13_robins<-metacont(nexp,mexp,sexp,nctrl,mctrl,sctrl,data = dset, comb.fixed = FALSE, hakn = TRUE, studlab = study, byvar = robins, print.byvar = FALSE)
+forest_ma_13_robins<-forest(ma_13_robins, text.addline1 = "Peak - Nadir glucose: Mean difference in the range (mg/dl)", text.addline2 = "RYGB vs. LSG", showweights = TRUE, digits = 2, digits.se = 2, fs.xlab = 1, label.e = "RYGB", label.c = "LSG", label.right = "Favours LSG", label.left = "Favours RYGB", just = "center")
+dev.off()
+
+#################################################### C_PEPTIDE ##########################################################
+
+#Now we define the dataset of interest
+dset<-C_PEPTIDE
+
+# First we define the order of reporting the different subgroups
+order_post2018 <- c("Studies published after 2018", "Studies published before 2018")
+order_matching <- c("Studies with patient matching", "Studies without patient matching")
+order_diabetes <- c("Studies with DM2 patients", "Studies without DM2 patients")
+order_robins <- c("ROBINS-I: Low", "ROBINS-I: Moderate", "ROBINS-I: Serious", "ROBINS-I: Critical")
+
+# Then we apply the predefined order of reporting to the dataset
+dset$post2018 <- factor(dset$post2018, levels = order_post2018)
+dset$matching <- factor(dset$matching, levels = order_matching)
+dset$diabetes <- factor(dset$diabetes, levels = order_diabetes)
+dset$robins <- factor(dset$robins, levels = order_robins)
+
+
+# First we define the width & height parameters for the different plots
+# Pooled analysis forest plot parameters
+W_for_pool <- 800
+H_for_pool <- 300
+
+
+# Pooled meta analysis
+png("64. Forest plot (C_PEPTIDE).png", width = W_for_pool, height = H_for_pool)
+ma_14<-metacont(nexp,mexp,sexp,nctrl,mctrl,sctrl,data = dset, studlab = study, comb.fixed = FALSE, hakn = TRUE)
+forest_ma_14<-forest(ma_14, text.addline1 = "Mean difference in C-peptide (ng/ml)", text.addline2 = "RYGB vs. LSG", showweights = TRUE, digits = 2, digits.se = 2, fs.xlab = 1, label.e = "RYGB", label.c = "LSG", label.right = "Favours LSG", label.left = "Favours RYGB", just = "center")
+dev.off()
+
+#################################################### ΔC_PEPTIDE ##########################################################
+
+#Now we define the dataset of interest
+dset<-ΔC_PEPTIDE
+
+# First we define the order of reporting the different subgroups
+order_post2018 <- c("Studies published after 2018", "Studies published before 2018")
+order_matching <- c("Studies with patient matching", "Studies without patient matching")
+order_diabetes <- c("Studies with DM2 patients", "Studies without DM2 patients")
+order_robins <- c("ROBINS-I: Low", "ROBINS-I: Moderate", "ROBINS-I: Serious", "ROBINS-I: Critical")
+
+# Then we apply the predefined order of reporting to the dataset
+dset$post2018 <- factor(dset$post2018, levels = order_post2018)
+dset$matching <- factor(dset$matching, levels = order_matching)
+dset$diabetes <- factor(dset$diabetes, levels = order_diabetes)
+dset$robins <- factor(dset$robins, levels = order_robins)
+
+
+# First we define the width & height parameters for the different plots
+# Pooled analysis forest plot parameters
+W_for_pool <- 800
+H_for_pool <- 300
+
+
+# Pooled meta analysis
+png("65. Forest plot (ΔC_PEPTIDE).png", width = W_for_pool, height = H_for_pool)
+ma_15<-metacont(nexp,mexp,sexp,nctrl,mctrl,sctrl,data = dset, studlab = study, comb.fixed = FALSE, hakn = TRUE)
+forest_ma_15<-forest(ma_15, text.addline1 = "C-peptide: Mean difference in the change from baseline (ng/ml)", text.addline2 = "RYGB vs. LSG", showweights = TRUE, digits = 2, digits.se = 2, fs.xlab = 1, label.e = "RYGB", label.c = "LSG", label.right = "Favours LSG", label.left = "Favours RYGB", just = "center")
+dev.off()
+
+#################################################### G_1H_FAST ##########################################################
+
+#Now we define the dataset of interest
+dset<-G_1H_FAST
+
+# First we define the order of reporting the different subgroups
+order_post2018 <- c("Studies published after 2018", "Studies published before 2018")
+order_matching <- c("Studies with patient matching", "Studies without patient matching")
+order_diabetes <- c("Studies with DM2 patients", "Studies without DM2 patients")
+order_robins <- c("ROBINS-I: Low", "ROBINS-I: Moderate", "ROBINS-I: Serious", "ROBINS-I: Critical")
+
+# Then we apply the predefined order of reporting to the dataset
+dset$post2018 <- factor(dset$post2018, levels = order_post2018)
+dset$matching <- factor(dset$matching, levels = order_matching)
+dset$diabetes <- factor(dset$diabetes, levels = order_diabetes)
+dset$robins <- factor(dset$robins, levels = order_robins)
+
+
+# First we define the width & height parameters for the different plots
+# Pooled analysis forest plot parameters
+W_for_pool <- 800
+H_for_pool <- 300
+
+
+# Pooled meta analysis
+png("66. Forest plot (G_1H_FAST).png", width = W_for_pool, height = H_for_pool)
+ma_16<-metacont(nexp,mexp,sexp,nctrl,mctrl,sctrl,data = dset, studlab = study, comb.fixed = FALSE, hakn = TRUE)
+forest_ma_16<-forest(ma_16, text.addline1 = "Mean difference in 1hr to fasting glucose ratio", text.addline2 = "RYGB vs. LSG", showweights = TRUE, digits = 2, digits.se = 2, fs.xlab = 1, label.e = "RYGB", label.c = "LSG", label.right = "Favours RYGB", label.left = "Favours LSG", just = "center")
+dev.off()
+
+#################################################### ΔG_1H_FAST ##########################################################
+
+#Now we define the dataset of interest
+dset<-ΔG_1H_FAST
+
+# First we define the order of reporting the different subgroups
+order_post2018 <- c("Studies published after 2018", "Studies published before 2018")
+order_matching <- c("Studies with patient matching", "Studies without patient matching")
+order_diabetes <- c("Studies with DM2 patients", "Studies without DM2 patients")
+order_robins <- c("ROBINS-I: Low", "ROBINS-I: Moderate", "ROBINS-I: Serious", "ROBINS-I: Critical")
+
+# Then we apply the predefined order of reporting to the dataset
+dset$post2018 <- factor(dset$post2018, levels = order_post2018)
+dset$matching <- factor(dset$matching, levels = order_matching)
+dset$diabetes <- factor(dset$diabetes, levels = order_diabetes)
+dset$robins <- factor(dset$robins, levels = order_robins)
+
+
+# First we define the width & height parameters for the different plots
+# Pooled analysis forest plot parameters
+W_for_pool <- 800
+H_for_pool <- 300
+
+
+# Pooled meta analysis
+png("67. Forest plot (ΔG_1H_FAST).png", width = W_for_pool, height = H_for_pool)
+ma_17<-metacont(nexp,mexp,sexp,nctrl,mctrl,sctrl,data = dset, studlab = study, comb.fixed = FALSE, hakn = TRUE)
+forest_ma_17<-forest(ma_17, text.addline1 = "1hr to fasting glucose ratio: MD in the change from baseline", text.addline2 = "RYGB vs. LSG", showweights = TRUE, digits = 2, digits.se = 2, fs.xlab = 1, label.e = "RYGB", label.c = "LSG", label.right = "Favours RYGB", label.left = "Favours LSG", just = "center")
+dev.off()
+
+#################################################### G_1H_2H ##########################################################
+
+#Now we define the dataset of interest
+dset<-G_1H_2H
+
+# First we define the order of reporting the different subgroups
+order_post2018 <- c("Studies published after 2018", "Studies published before 2018")
+order_matching <- c("Studies with patient matching", "Studies without patient matching")
+order_diabetes <- c("Studies with DM2 patients", "Studies without DM2 patients")
+order_robins <- c("ROBINS-I: Low", "ROBINS-I: Moderate", "ROBINS-I: Serious", "ROBINS-I: Critical")
+
+# Then we apply the predefined order of reporting to the dataset
+dset$post2018 <- factor(dset$post2018, levels = order_post2018)
+dset$matching <- factor(dset$matching, levels = order_matching)
+dset$diabetes <- factor(dset$diabetes, levels = order_diabetes)
+dset$robins <- factor(dset$robins, levels = order_robins)
+
+
+# First we define the width & height parameters for the different plots
+# Pooled analysis forest plot parameters
+W_for_pool <- 800
+H_for_pool <- 300
+
+
+# Pooled meta analysis
+png("68. Forest plot (G_1H_2H).png", width = W_for_pool, height = H_for_pool)
+ma_18<-metacont(nexp,mexp,sexp,nctrl,mctrl,sctrl,data = dset, studlab = study, comb.fixed = FALSE, hakn = TRUE)
+forest_ma_18<-forest(ma_18, text.addline1 = "Mean difference in 1hr to 2hr glucose ratio", text.addline2 = "RYGB vs. LSG", showweights = TRUE, digits = 2, digits.se = 2, fs.xlab = 1, label.e = "RYGB", label.c = "LSG", label.right = "Favours LSG", label.left = "Favours RYGB", just = "center")
+dev.off()
+
+#################################################### ΔG_1H_2H ##########################################################
+
+#Now we define the dataset of interest
+dset<-ΔG_1H_2H
+
+# First we define the order of reporting the different subgroups
+order_post2018 <- c("Studies published after 2018", "Studies published before 2018")
+order_matching <- c("Studies with patient matching", "Studies without patient matching")
+order_diabetes <- c("Studies with DM2 patients", "Studies without DM2 patients")
+order_robins <- c("ROBINS-I: Low", "ROBINS-I: Moderate", "ROBINS-I: Serious", "ROBINS-I: Critical")
+
+# Then we apply the predefined order of reporting to the dataset
+dset$post2018 <- factor(dset$post2018, levels = order_post2018)
+dset$matching <- factor(dset$matching, levels = order_matching)
+dset$diabetes <- factor(dset$diabetes, levels = order_diabetes)
+dset$robins <- factor(dset$robins, levels = order_robins)
+
+
+# First we define the width & height parameters for the different plots
+# Pooled analysis forest plot parameters
+W_for_pool <- 800
+H_for_pool <- 300
+
+
+# Pooled meta analysis
+png("69. Forest plot (ΔG_1H_2H).png", width = W_for_pool, height = H_for_pool)
+ma_19<-metacont(nexp,mexp,sexp,nctrl,mctrl,sctrl,data = dset, studlab = study, comb.fixed = FALSE, hakn = TRUE)
+forest_ma_19<-forest(ma_19, text.addline1 = "1hr to 2h glucose ratio: MD in the change from baseline", text.addline2 = "RYGB vs. LSG", showweights = TRUE, digits = 2, digits.se = 2, fs.xlab = 1, label.e = "RYGB", label.c = "LSG", label.right = "Favours LSG", label.left = "Favours RYGB", just = "center")
+dev.off()
+
+#################################################### I_1H_FAST ##########################################################
+
+#Now we define the dataset of interest
+dset<-I_1H_FAST
+
+# First we define the order of reporting the different subgroups
+order_post2018 <- c("Studies published after 2018", "Studies published before 2018")
+order_matching <- c("Studies with patient matching", "Studies without patient matching")
+order_diabetes <- c("Studies with DM2 patients", "Studies without DM2 patients")
+order_robins <- c("ROBINS-I: Low", "ROBINS-I: Moderate", "ROBINS-I: Serious", "ROBINS-I: Critical")
+
+# Then we apply the predefined order of reporting to the dataset
+dset$post2018 <- factor(dset$post2018, levels = order_post2018)
+dset$matching <- factor(dset$matching, levels = order_matching)
+dset$diabetes <- factor(dset$diabetes, levels = order_diabetes)
+dset$robins <- factor(dset$robins, levels = order_robins)
+
+
+# First we define the width & height parameters for the different plots
+# Pooled analysis forest plot parameters
+W_for_pool <- 800
+H_for_pool <- 300
+
+
+# Pooled meta analysis
+png("70. Forest plot (I_1H_FAST).png", width = W_for_pool, height = H_for_pool)
+ma_20<-metacont(nexp,mexp,sexp,nctrl,mctrl,sctrl,data = dset, studlab = study, comb.fixed = FALSE, hakn = TRUE)
+forest_ma_20<-forest(ma_20, text.addline1 = "Mean difference in 1hr to fasting insulin ratio", text.addline2 = "RYGB vs. LSG", showweights = TRUE, digits = 2, digits.se = 2, fs.xlab = 1, label.e = "RYGB", label.c = "LSG", label.right = "Favours LSG", label.left = "Favours RYGB", just = "center")
+dev.off()
+
+#################################################### ΔI_1H_FAST ##########################################################
+
+#Now we define the dataset of interest
+dset<-ΔI_1H_FAST
+
+# First we define the order of reporting the different subgroups
+order_post2018 <- c("Studies published after 2018", "Studies published before 2018")
+order_matching <- c("Studies with patient matching", "Studies without patient matching")
+order_diabetes <- c("Studies with DM2 patients", "Studies without DM2 patients")
+order_robins <- c("ROBINS-I: Low", "ROBINS-I: Moderate", "ROBINS-I: Serious", "ROBINS-I: Critical")
+
+# Then we apply the predefined order of reporting to the dataset
+dset$post2018 <- factor(dset$post2018, levels = order_post2018)
+dset$matching <- factor(dset$matching, levels = order_matching)
+dset$diabetes <- factor(dset$diabetes, levels = order_diabetes)
+dset$robins <- factor(dset$robins, levels = order_robins)
+
+
+# First we define the width & height parameters for the different plots
+# Pooled analysis forest plot parameters
+W_for_pool <- 800
+H_for_pool <- 300
+
+
+# Pooled meta analysis
+png("71. Forest plot (ΔI_1H_FAST).png", width = W_for_pool, height = H_for_pool)
+ma_21<-metacont(nexp,mexp,sexp,nctrl,mctrl,sctrl,data = dset, studlab = study, comb.fixed = FALSE, hakn = TRUE)
+forest_ma_21<-forest(ma_21, text.addline1 = "1hr to fasting insulin ratio: MD in the change from baseline", text.addline2 = "RYGB vs. LSG", showweights = TRUE, digits = 2, digits.se = 2, fs.xlab = 1, label.e = "RYGB", label.c = "LSG", label.right = "Favours LSG", label.left = "Favours RYGB", just = "center")
+dev.off()
+
+#################################################### I_1H_2H ##########################################################
+
+#Now we define the dataset of interest
+dset<-I_1H_2H
+
+# First we define the order of reporting the different subgroups
+order_post2018 <- c("Studies published after 2018", "Studies published before 2018")
+order_matching <- c("Studies with patient matching", "Studies without patient matching")
+order_diabetes <- c("Studies with DM2 patients", "Studies without DM2 patients")
+order_robins <- c("ROBINS-I: Low", "ROBINS-I: Moderate", "ROBINS-I: Serious", "ROBINS-I: Critical")
+
+# Then we apply the predefined order of reporting to the dataset
+dset$post2018 <- factor(dset$post2018, levels = order_post2018)
+dset$matching <- factor(dset$matching, levels = order_matching)
+dset$diabetes <- factor(dset$diabetes, levels = order_diabetes)
+dset$robins <- factor(dset$robins, levels = order_robins)
+
+
+# First we define the width & height parameters for the different plots
+# Pooled analysis forest plot parameters
+W_for_pool <- 800
+H_for_pool <- 300
+
+
+# Pooled meta analysis
+png("72. Forest plot (I_1H_2H).png", width = W_for_pool, height = H_for_pool)
+ma_22<-metacont(nexp,mexp,sexp,nctrl,mctrl,sctrl,data = dset, studlab = study, comb.fixed = FALSE, hakn = TRUE)
+forest_ma_22<-forest(ma_22, text.addline1 = "Mean difference in 1hr to 2hr insulin ratio", text.addline2 = "RYGB vs. LSG", showweights = TRUE, digits = 2, digits.se = 2, fs.xlab = 1, label.e = "RYGB", label.c = "LSG", label.right = "Favours RYGB", label.left = "Favours LSG", just = "center")
+dev.off()
+
+#################################################### ΔI_1H_2H ##########################################################
+
+#Now we define the dataset of interest
+dset<-ΔI_1H_2H
+
+# First we define the order of reporting the different subgroups
+order_post2018 <- c("Studies published after 2018", "Studies published before 2018")
+order_matching <- c("Studies with patient matching", "Studies without patient matching")
+order_diabetes <- c("Studies with DM2 patients", "Studies without DM2 patients")
+order_robins <- c("ROBINS-I: Low", "ROBINS-I: Moderate", "ROBINS-I: Serious", "ROBINS-I: Critical")
+
+# Then we apply the predefined order of reporting to the dataset
+dset$post2018 <- factor(dset$post2018, levels = order_post2018)
+dset$matching <- factor(dset$matching, levels = order_matching)
+dset$diabetes <- factor(dset$diabetes, levels = order_diabetes)
+dset$robins <- factor(dset$robins, levels = order_robins)
+
+
+# First we define the width & height parameters for the different plots
+# Pooled analysis forest plot parameters
+W_for_pool <- 800
+H_for_pool <- 300
+
+
+# Pooled meta analysis
+png("73. Forest plot (I_1H_2H).png", width = W_for_pool, height = H_for_pool)
+ma_23<-metacont(nexp,mexp,sexp,nctrl,mctrl,sctrl,data = dset, studlab = study, comb.fixed = FALSE, hakn = TRUE)
+forest_ma_23<-forest(ma_23, text.addline1 = "1hr to 2h insulin ratio: MD in the change from baseline", text.addline2 = "RYGB vs. LSG", showweights = TRUE, digits = 2, digits.se = 2, fs.xlab = 1, label.e = "RYGB", label.c = "LSG", label.right = "Favours RYGB", label.left = "Favours LSG", just = "center")
+dev.off()
+
