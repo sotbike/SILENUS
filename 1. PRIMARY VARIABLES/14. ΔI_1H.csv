@@ -1,0 +1,5 @@
+label;study;year;country;diabetes;matching;stars;robins;post2018;start;end;nexp;mexp;sexp;nctrl;mctrl;sctrl
+2052;Brix et al. 2019;2019;Austria;Studies without DM2 patients;Studies without patient matching;5;ROBINS-I: Serious;Studies published after 2018;1/1/2017;31/12/2018;175;-268;58.889;62;-434;105.986
+2025;Roslin et al. 2012;2012;USA;Studies with DM2 patients;Studies without patient matching;6;ROBINS-I: Moderate;Studies published before 2018;1/1/2012;31/12/2012;12;-0.45;26.749;13;10.3;16.476
+2059;Roslin et al. 2014;2014;USA;Studies with DM2 patients;Studies without patient matching;6;ROBINS-I: Moderate;Studies published before 2018;1/1/2013;31/12/2013;12;200.4;188.034;12;-202.2;121.488
+2031;Sessa et al. 2019;2019;Italy;Studies without DM2 patients;Studies with patient matching;6;ROBINS-I: Moderate;Studies published after 2018;1/6/2016;28/2/2018;11;5.5;36.244;7;-24.3;26.847

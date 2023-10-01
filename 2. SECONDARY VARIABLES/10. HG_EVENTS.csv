@@ -1,0 +1,3 @@
+label;study;year;country;diabetes;matching;stars;robins;post2018;start;end;nexp;mexp;sexp;nctrl;mctrl;sctrl
+2032;Lupoli et al. 2020;2020;Italy;Studies with DM2 patients;Studies without patient matching;5;ROBINS-I: Serious;Studies published after 2018;1/1/2019;31/12/2019;22;8.4;7.9;29;3.8;4.1
+2064;Wysocki et al. 2019;2019;Poland;Studies with DM2 patients;Studies without patient matching;5;ROBINS-I: Serious;Studies published after 2018;1/1/2018;31/12/2018;14;11.9;4.9;18;11.6;7.2
