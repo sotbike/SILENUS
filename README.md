@@ -27,7 +27,7 @@ Secondary:
 2l. OGTT: Peak - Nadir glycemia range: MD (mean difference; mg/dl)
 2m. Postoperative C-peptide levels & change from baseline: MD (mean difference; ng/ml)
 2n. 1hr / fasting glucose & insulin ratios (& changes from baseline): MD (mean difference)
-2o. 1hr / 2hr glucose & insulin ratios (& changes from baseline(: MD (mean difference)
+2o. 1hr / 2hr glucose & insulin ratios (& changes from baseline): MD (mean difference)
 
 
 Included items: Individual study data (“.csv” files) & R code (“.txt” files).
